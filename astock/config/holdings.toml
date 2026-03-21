@@ -1,0 +1,28 @@
+# 持仓配置文件
+# 用法：uv run python rebalance_now.py config/holdings.toml config/permanent_portfolio.toml
+#
+# 非现金资产：填 shares（持有份额），程序自动查询最新价格计算市值
+# 现金类资产：填 shares（持有份额），程序自动查询最新净值计算市值
+#             若查询失败，改用 value（当前市值，元）手动指定
+#
+# 持仓中的资产代码必须与策略配置文件中的 [assets] 完全一致，否则报错
+# 使用 --force 可强制执行：卖出持仓中多余资产，买入策略中缺少资产
+
+[meta]
+name = "我的持仓"
+
+[holdings.511620]
+name   = "货币ETF"
+shares = 2500
+
+[holdings.511090]
+name   = "30年国债ETF"
+shares = 2500
+
+[holdings.518880]
+name   = "黄金ETF"
+shares = 25000
+
+[holdings.510300]
+name   = "沪深300ETF"
+shares = 180000
