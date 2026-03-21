@@ -98,27 +98,29 @@ def _fetch_east_kline(code: str, start: str, end: str) -> pd.DataFrame:
         cached_df = pd.DataFrame(columns=['trade_date', 'close'])
         latest_cached = None
 
-    # 确定需要拉取的范围
     today = pd.Timestamp.now().strftime('%Y-%m-%d')
-    fetch_start = latest_cached if latest_cached else '19900101'
+    end_excl_today = min(end, (pd.Timestamp.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d'))
 
-    if latest_cached and latest_cached >= today:
-        # 缓存已是最新，无需请求
-        new_df = pd.DataFrame(columns=['trade_date', 'close'])
-    else:
-        new_df = _fetch_east_kline_remote(code, fetch_start, today)
+    # 拉取缓存中缺失的历史部分（不含今天，历史数据不变可永久缓存）
+    if latest_cached is None or latest_cached < end_excl_today:
+        fetch_start = latest_cached if latest_cached else '19900101'
+        new_df = _fetch_east_kline_remote(code, fetch_start, end_excl_today)
+        if not new_df.empty:
+            combined = pd.concat([cached_df, new_df]).drop_duplicates('trade_date').sort_values('trade_date')
+            with open(cache_path, 'wb') as f:
+                pickle.dump(combined, f)
+            cached_df = combined
 
-    # 合并并去重，写回缓存
-    if not new_df.empty:
-        combined = pd.concat([cached_df, new_df]).drop_duplicates('trade_date').sort_values('trade_date')
-        with open(cache_path, 'wb') as f:
-            pickle.dump(combined, f)
-        cached_df = combined
+    # 查询区间包含今天，单独请求今天数据（不写入缓存，收盘前数据不稳定）
+    today_df = pd.DataFrame(columns=['trade_date', 'close'])
+    if end >= today:
+        today_df = _fetch_east_kline_remote(code, today, today)
 
-    # 按请求区间切片返回
-    if cached_df.empty:
+    # 合并今天数据并按区间返回
+    result = pd.concat([cached_df, today_df]).drop_duplicates('trade_date').sort_values('trade_date')
+    if result.empty:
         return pd.DataFrame(columns=['trade_date', 'close'])
-    return cached_df[(cached_df['trade_date'] >= start) & (cached_df['trade_date'] <= end)].reset_index(drop=True)
+    return result[(result['trade_date'] >= start) & (result['trade_date'] <= end)].reset_index(drop=True)
 
 
 def load_price_data(assets: dict, start: str, end: str) -> pd.DataFrame:
