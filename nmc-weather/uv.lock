@@ -62,7 +62,7 @@ wheels = [
 ]
 
 [[package]]
-name = "nmc"
+name = "nmc-weather"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
