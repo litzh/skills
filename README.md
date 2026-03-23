@@ -12,7 +12,6 @@
 
 | Skill | 描述 |
 |-------|------|
-| [`diary`](./diary/) | 两阶段日记工作流：实时记录碎片内容，定期生成正式日记写入 Obsidian |
 | [`health`](./health/) | 解析 iPhone Health 快捷指令导出的 JSON，输出睡眠结构、HRV、心率、活动能量等健康数据摘要 |
 | [`nmc-weather`](./nmc-weather/) | 中央气象台天气查询，支持实况、7天预报、空气质量、气象预警 |
 | [`tophub`](./tophub/) | 全网实时热点话题聚合，来自 tophub.today，按报道数量排序 |
