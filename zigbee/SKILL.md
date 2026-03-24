@@ -1,6 +1,14 @@
+---
+name: zigbee
+description: Control Zigbee devices via Zigbee2MQTT using zigbee.py over MQTT.
+metadata: {"clawdbot":{"emoji":"💡","os":["linux","darwin"],"requires":{"bins":["uv"]}}}
+---
+
 # Zigbee Device Control Skill
 
 This skill controls Zigbee devices via Zigbee2MQTT using `zigbee.py`.
+
+> **Important:** All commands must be run from the directory containing `zigbee.py`.
 
 ## Prerequisites
 
