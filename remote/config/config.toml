@@ -1,5 +1,0 @@
-default_device = "living"
-
-[settings]
-learn_timeout = 10
-dhcp_cache_ttl = 86400
