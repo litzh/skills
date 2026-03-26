@@ -58,8 +58,8 @@ uv run scripts/batch_get_id.py --mobiles 13800138000
 通过飞书自定义机器人 Webhook 发送文本消息（已启用签名验证）。
 
 环境变量：
-* `FEISHU_ROBOT_ID` 配置文件 `skills.feishu-api.robotId`
-* `FEISHU_ROBOT_SECRET` 配置文件 `skills.feishu-api.secret`
+* `FEISHU_ROBOT_ID` 
+* `FEISHU_ROBOT_SECRET` 
 
 ```bash
 # 发送普通消息
