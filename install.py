@@ -43,6 +43,13 @@ SKILLS = [
         "env": {},
         "data_dirs": [],
     },
+    {
+        "dir": "astock",
+        "script": "main.py",
+        "cmd": "astock",
+        "env": {"ASTOCK_DATA_DIR": str(Path.home() / ".local/share/astock")},
+        "data_dirs": [Path.home() / ".local/share/astock"],
+    },
 ]
 
 

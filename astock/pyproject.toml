@@ -1,0 +1,12 @@
+[project]
+name = "astock"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "mplfinance>=0.12.10b0",
+    "pandas>=3.0.1",
+    "tushare>=1.4.29",
+]
