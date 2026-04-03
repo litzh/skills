@@ -107,7 +107,7 @@ def save_cache(devices):
 def require_cache():
     cache = load_cache()
     if cache is None:
-        click.echo("No device cache found. Run 'bulb scan' first.", err=True)
+        click.echo("No device cache found. Run 'zigbee scan' first.", err=True)
         sys.exit(1)
     return cache
 
