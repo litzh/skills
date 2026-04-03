@@ -39,6 +39,9 @@ FEISHU_ROBOT_SECRET=xxx
 ZIGBEE_BROKER=192.168.1.x
 ZIGBEE_DEVICE=my-light
 
+# astock
+TUSHARE_TOKEN=xxx
+
 # ys7（萤石摄像头）
 YS7_APP_KEY=xxx
 YS7_APP_SECRET=xxx
@@ -126,6 +129,39 @@ feishu robot-send "消息内容" --at ou_xxx ou_yyy
 
 ---
 
+### `astock` — A 股交易数据分析
+
+**必须配置：** `TUSHARE_TOKEN`
+
+导入券商导出的资金流水和成交记录，抓取历史日K线，分析持仓、盈亏、交易磨损，绘制带交易标注的K线图。
+
+```bash
+# 导入交易数据（券商导出 TSV）
+astock import --money money.tsv --stock stock.tsv
+
+# 抓取 K 线（增量，自动提取持仓标的）
+astock fetch
+astock fetch --codes 600519 518880
+
+# 手动导入 K 线 CSV（tushare 导出格式，或含 date/open/high/low/close 的 CSV）
+astock import --kline 518880.csv          # 自动从 ts_code 列提取代码
+astock import --kline data.csv --code 600519
+
+# 分析
+astock summary    # 账户总览（净入金、总资产、总盈亏）
+astock position   # 当前持仓明细
+astock pnl        # 盈亏分析（已实现 + 浮动）
+astock friction   # 交易磨损分析（费用 + 做T损耗）
+
+# K 线图
+astock chart 600519
+astock chart 518880 --start 2024-01-01 --output gold.png
+```
+
+数据目录：`~/.local/share/astock/`
+
+---
+
 ### `ys7` — 萤石摄像头
 
 纯 curl 调用，无独立命令。参考 `ys7/SKILL.md`。
@@ -156,3 +192,4 @@ curl -X POST https://open.ys7.com/api/lapp/v2/live/address/get \
 | zigbee | `~/.local/share/zigbee/` | 设备缓存 | `ZIGBEE_DATA_DIR` |
 | remote | `~/.config/remote/` | 配置、设备、方案 | `REMOTE_CONFIG_DIR` |
 | tieba | `~/.cache/tieba/` | 抓取缓存 | `TIEBA_CACHE_DIR` |
+| astock | `~/.local/share/astock/` | SQLite 数据库 | `ASTOCK_DATA_DIR` |

@@ -72,4 +72,4 @@ astock chart 600519 --show                   # 绘制并弹窗显示
 |------|------|
 | `~/.local/share/astock/astock.db` | SQLite 数据库（交易记录、K线） |
 
-数据库不存在时，自动从源码目录的 `data/astock.sql` 恢复空结构。
+数据库不存在时首次运行自动创建。
