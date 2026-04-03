@@ -1,0 +1,5 @@
+default_device = "living_room"
+
+[settings]
+learn_timeout = 10
+dhcp_cache_ttl = 86400

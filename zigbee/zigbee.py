@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -8,7 +9,8 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
 
-CACHE_FILE = Path(".devices.json")
+_data_dir = Path(os.environ.get("ZIGBEE_DATA_DIR", Path.home() / ".local/share/zigbee"))
+CACHE_FILE = _data_dir / "devices.json"
 
 
 # ---------------------------------------------------------------------------
@@ -208,7 +210,7 @@ def format_state(state_dict, caps, fields=None):
 # ---------------------------------------------------------------------------
 
 @click.group()
-@click.option("--broker", "-b", envvar="ZIGBEE_BROKER", required=True, help="MQTT broker address")
+@click.option("--broker", "-b", envvar="ZIGBEE_BROKER", default=None, help="MQTT broker address (or set ZIGBEE_BROKER)")
 @click.option("--port", "-p", envvar="ZIGBEE_PORT", default=1883, show_default=True, type=int)
 @click.option("--device", "-d", envvar="ZIGBEE_DEVICE", default=None, help="Device friendly_name")
 @click.pass_context
@@ -219,11 +221,19 @@ def cli(ctx, broker, port, device):
     ctx.obj["device"] = device
 
 
+def require_broker(ctx):
+    broker = ctx.obj["broker"]
+    if not broker:
+        click.echo("Error: --broker / ZIGBEE_BROKER is required", err=True)
+        sys.exit(1)
+    return broker
+
+
 def get_ctx_device(ctx):
     """Resolve device name and caps from cache, requiring --device."""
     device = ctx.obj["device"]
     if not device:
-        click.echo("Error: --device / BULB_DEVICE is required", err=True)
+        click.echo("Error: --device / ZIGBEE_DEVICE is required", err=True)
         sys.exit(1)
     cache = require_cache()
     return device, get_device_info(cache, device)["caps"]
@@ -247,7 +257,7 @@ def scan(ctx, list_only):
             click.echo(f"  {name}  [{model}]  {caps}")
         return
 
-    broker, port = ctx.obj["broker"], ctx.obj["port"]
+    broker, port = require_broker(ctx), ctx.obj["port"]
     click.echo(f"Scanning {broker}:{port} ...")
 
     raw = mqtt_fetch_once(broker, port, "zigbee2mqtt/bridge/devices")
@@ -319,7 +329,7 @@ def info(ctx):
 def on(ctx):
     """Turn the light on."""
     device, _ = get_ctx_device(ctx)
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, {"state": "ON"})
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, {"state": "ON"})
     click.echo("ON")
 
 
@@ -328,7 +338,7 @@ def on(ctx):
 def off(ctx):
     """Turn the light off."""
     device, _ = get_ctx_device(ctx)
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, {"state": "OFF"})
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, {"state": "OFF"})
     click.echo("OFF")
 
 
@@ -337,7 +347,7 @@ def off(ctx):
 def toggle(ctx):
     """Toggle the light."""
     device, _ = get_ctx_device(ctx)
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, {"state": "TOGGLE"})
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, {"state": "TOGGLE"})
     click.echo("TOGGLE")
 
 
@@ -353,7 +363,7 @@ def brightness(ctx, value, transition):
     payload = {"brightness": val}
     if transition is not None:
         payload["transition"] = transition
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, payload)
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, payload)
     click.echo(f"Brightness: {val} ({value_to_percent(val, b['min'], b['max'])}%)")
 
 
@@ -377,7 +387,7 @@ def temp(ctx, value, transition):
 
     if transition is not None:
         payload["transition"] = transition
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, payload)
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, payload)
     click.echo(f"Color temp: {display}")
 
 
@@ -403,7 +413,7 @@ def color(ctx, value, transition):
     payload = {"color": color_payload}
     if transition is not None:
         payload["transition"] = transition
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, payload)
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, payload)
     click.echo(f"Color: {value}")
 
 
@@ -420,7 +430,7 @@ def effect(ctx, name):
     if name not in valid:
         click.echo(f"Error: unknown effect '{name}'. Valid: {', '.join(valid)}", err=True)
         sys.exit(1)
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, {"effect": name})
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, {"effect": name})
     click.echo(f"Effect: {name}")
 
 
@@ -437,7 +447,7 @@ def poweron(ctx, value):
     if value not in valid:
         click.echo(f"Error: invalid value '{value}'. Valid: {', '.join(valid)}", err=True)
         sys.exit(1)
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, {"color_power_on_behavior": value})
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, {"color_power_on_behavior": value})
     click.echo(f"Power-on behavior: {value}")
 
 
@@ -450,7 +460,7 @@ def dnd(ctx, value):
     if not caps.get("do_not_disturb"):
         click.echo("Error: this device does not support do_not_disturb", err=True)
         sys.exit(1)
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, {"do_not_disturb": value == "on"})
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, {"do_not_disturb": value == "on"})
     click.echo(f"Do-not-disturb: {value}")
 
 
@@ -515,7 +525,7 @@ def set_cmd(ctx, state, brightness_val, temp_val, color_val, transition, on_time
         click.echo("Nothing to set.", err=True)
         sys.exit(1)
 
-    mqtt_send(ctx.obj["broker"], ctx.obj["port"], device, payload)
+    mqtt_send(require_broker(ctx), ctx.obj["port"], device, payload)
     click.echo("Set: " + ", ".join(summary))
 
 
@@ -525,7 +535,7 @@ def set_cmd(ctx, state, brightness_val, temp_val, color_val, transition, on_time
 def get_cmd(ctx, fields):
     """Get current state. Optionally specify fields: state brightness color_temp color."""
     device, caps = get_ctx_device(ctx)
-    state = mqtt_get_state(ctx.obj["broker"], ctx.obj["port"], device)
+    state = mqtt_get_state(require_broker(ctx), ctx.obj["port"], device)
     if not state:
         click.echo("No response from device (timeout).", err=True)
         sys.exit(1)

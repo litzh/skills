@@ -1,124 +1,122 @@
 ---
 name: zigbee
-description: Control Zigbee devices via Zigbee2MQTT using zigbee.py over MQTT.
+description: 通过 Zigbee2MQTT 使用 MQTT 协议控制 Zigbee 设备。
 metadata: {"clawdbot":{"emoji":"💡","os":["linux","darwin"],"requires":{"bins":["uv"]}}}
 ---
 
-# Zigbee Device Control Skill
+# Zigbee 设备控制
 
-This skill controls Zigbee devices via Zigbee2MQTT using `zigbee.py`.
+本工具通过 `zigbee` 命令经由 Zigbee2MQTT 控制 Zigbee 设备。
 
-> **Important:** All commands must be run from the directory containing `zigbee.py`.
+## 前置配置
 
-## Prerequisites
-
-Set environment variables (or pass as CLI arguments):
+在 `~/.config/skills.env` 中配置环境变量（自动加载）：
 
 ```bash
-export ZIGBEE_BROKER=<mqtt_broker_ip>   # required
-export ZIGBEE_DEVICE=<friendly_name>    # required for most commands
-export ZIGBEE_PORT=1883                 # optional, default 1883
+ZIGBEE_BROKER=<mqtt_broker_ip>   # 必须
+ZIGBEE_DEVICE=<friendly_name>    # 大多数命令必须
+ZIGBEE_PORT=1883                 # 可选，默认 1883
 ```
 
-Or pass inline:
+或直接在命令中传入：
 
 ```bash
-uv run zigbee.py --broker <ip> --device <name> <command>
+zigbee --broker <ip> --device <name> <命令>
 ```
 
-## Workflow
+## 使用流程
 
-### Step 1: Check device capabilities
+### 第一步：查看设备能力
 
 ```bash
-uv run zigbee.py info
+zigbee info
 ```
 
-If the device exists in cache, this prints its model, vendor, and full capability list. Proceed to Step 3.
+若设备已在缓存中，将输出其型号、厂商和完整能力列表，可直接跳至第三步。
 
-### Step 2: Device not in cache — run scan
+### 第二步：设备不在缓存中 — 执行扫描
 
-If `info` exits with "No device cache found" or "device not in cache":
+若 `info` 提示 "No device cache found" 或 "device not in cache"：
 
 ```bash
-uv run zigbee.py scan
+zigbee scan
 ```
 
-This fetches all devices from `zigbee2mqtt/bridge/devices`, saves them to `.devices.json` in the current directory, and prints discovered devices. Then retry `info`.
+该命令从 `zigbee2mqtt/bridge/devices` 获取所有设备，保存至 `~/.local/share/zigbee/devices.json`，并打印发现的设备列表。之后重试 `info`。
 
-To list all cached devices without scanning:
+列出缓存中的设备（不重新扫描）：
 
 ```bash
-uv run zigbee.py scan --list
+zigbee scan --list
 ```
 
-### Step 3: Send commands based on capabilities
+### 第三步：根据能力发送命令
 
-Only send commands the device actually supports (confirmed via `info`).
+只发送设备实际支持的命令（通过 `info` 确认）。
 
-**state** — on / off / toggle:
+**state** — 开 / 关 / 切换：
 ```bash
-uv run zigbee.py on
-uv run zigbee.py off
-uv run zigbee.py toggle
+zigbee on
+zigbee off
+zigbee toggle
 ```
 
-**brightness** — value 0-254 or percentage:
+**brightness** — 值 0-254 或百分比：
 ```bash
-uv run zigbee.py brightness 128
-uv run zigbee.py brightness 50%
+zigbee brightness 128
+zigbee brightness 50%
 ```
 
-**color_temp** — mired value, percentage, or preset name:
+**color_temp** — mired 值、百分比或预设名称：
 ```bash
-uv run zigbee.py temp 300
-uv run zigbee.py temp 50%
-uv run zigbee.py temp warm      # presets: coolest, cool, neutral, warm, warmest
+zigbee temp 300
+zigbee temp 50%
+zigbee temp warm      # 预设：coolest、cool、neutral、warm、warmest
 ```
 
-**color** — hex or R,G,B recommended; x/y (CIE 1931) also accepted:
+**color** — 推荐使用十六进制或 R,G,B；也支持 x/y（CIE 1931）：
 ```bash
-uv run zigbee.py color "#FF5500"
-uv run zigbee.py color 255,85,0
-uv run zigbee.py color x:0.3,y:0.4
+zigbee color "#FF5500"
+zigbee color 255,85,0
+zigbee color x:0.3,y:0.4
 ```
 
-Note: the device's native color space is CIE 1931 xy. Zigbee2MQTT converts hex/RGB to xy internally, so hex or RGB is the preferred input format. When reading state via `get`, the color is reported back in xy format.
+注：设备原生色彩空间为 CIE 1931 xy，Zigbee2MQTT 会在内部将十六进制/RGB 转换为 xy，因此推荐使用十六进制或 RGB 格式。通过 `get` 读取状态时，颜色以 xy 格式返回。
 
-**effect** — trigger a light effect:
+**effect** — 触发灯光特效：
 ```bash
-uv run zigbee.py effect colorloop
-uv run zigbee.py effect stop_colorloop
-# valid values listed in `info` output
+zigbee effect colorloop
+zigbee effect stop_colorloop
+# 可用值见 `info` 输出
 ```
 
-**do_not_disturb** — keep light OFF after power outage:
+**do_not_disturb** — 断电后保持关闭状态：
 ```bash
-uv run zigbee.py dnd on
-uv run zigbee.py dnd off
+zigbee dnd on
+zigbee dnd off
 ```
 
-**color_power_on_behavior** — behavior on power restore:
+**color_power_on_behavior** — 上电恢复行为：
 ```bash
-uv run zigbee.py poweron previous    # initial / previous / customized
+zigbee poweron previous    # initial / previous / customized
 ```
 
-**set** — send multiple properties in one command:
+**set** — 一条命令设置多个属性：
 ```bash
-uv run zigbee.py set --state on --brightness 80% --temp warm --transition 2
-uv run zigbee.py set --state on --on-time 300    # auto-off after 300s
+zigbee set --state on --brightness 80% --temp warm --transition 2
+zigbee set --state on --on-time 300    # 300 秒后自动关闭
 ```
 
-**get** — read current device state:
+**get** — 读取当前设备状态：
 ```bash
-uv run zigbee.py get                        # all fields
-uv run zigbee.py get state brightness       # specific fields
+zigbee get                        # 所有字段
+zigbee get state brightness       # 指定字段
 ```
 
-## Notes
+## 注意事项
 
-- Always check `info` before sending commands — do not assume capabilities.
-- `effect` and `color` commands will error if the device does not support them.
-- Percentages are scaled to the device's actual min/max range from cache.
-- `--transition` (seconds) can be added to `brightness`, `temp`, `color`, and `set` for smooth transitions.
-- The cache file `.devices.json` is local to the working directory. Run `scan` again if devices are added or renamed in Zigbee2MQTT.
+- 发送命令前务必先执行 `info`，不要假设设备能力。
+- 设备不支持 `effect` 或 `color` 时，对应命令会报错。
+- 百分比基于缓存中设备的实际最小/最大值换算。
+- `brightness`、`temp`、`color`、`set` 命令均支持 `--transition`（秒），用于平滑过渡。
+- 设备缓存：`~/.local/share/zigbee/devices.json`。Zigbee2MQTT 中新增或重命名设备后，需重新执行 `scan`。

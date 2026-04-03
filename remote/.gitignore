@@ -1,0 +1,14 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+.python-version
+
+# Virtual environments
+.venv
+
+# 个人设备配置（含 MAC 地址、内网 IP）
+config/devices.toml

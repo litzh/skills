@@ -1,0 +1,6 @@
+[[devices]]
+name = "living"
+mac = "AA:BB:CC:DD:EE:FF"
+ip_mode = "static"
+model = "Broadlink RM4 mini"
+ip = "192.168.1.100"

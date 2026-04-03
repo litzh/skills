@@ -1,101 +1,101 @@
 ---
 name: caldav-calendar
-description: Sync and query CalDAV calendars (iCloud, Google, Fastmail, Nextcloud, etc.) using vdirsyncer + khal. Works on Linux.
+description: 使用 vdirsyncer + khal 同步和查询 CalDAV 日历（iCloud、Google、Fastmail、Nextcloud 等）。适用于 Linux。
 metadata: {"clawdbot":{"emoji":"📅","os":["linux"],"requires":{"bins":["vdirsyncer","khal"]},"install":[{"id":"apt","kind":"apt","packages":["vdirsyncer","khal"],"bins":["vdirsyncer","khal"],"label":"Install vdirsyncer + khal via apt"}]}}
 ---
 
-# CalDAV Calendar (vdirsyncer + khal)
+# CalDAV 日历（vdirsyncer + khal）
 
-**vdirsyncer** syncs CalDAV calendars to local `.ics` files. **khal** reads and writes them.
+**vdirsyncer** 将 CalDAV 日历同步为本地 `.ics` 文件，**khal** 负责读写这些文件。
 
-## Sync First
+## 先同步
 
-Always sync before querying or after making changes:
+查询前或修改后，务必先同步：
 ```bash
 vdirsyncer sync
 ```
 
-## View Events
+## 查看日程
 
 ```bash
-khal list                        # Today
-khal list today 7d               # Next 7 days
-khal list tomorrow               # Tomorrow
-khal list 2026-01-15 2026-01-20  # Date range
-khal list -a Work today          # Specific calendar
+khal list                        # 今天
+khal list today 7d               # 未来7天
+khal list tomorrow               # 明天
+khal list 2026-01-15 2026-01-20  # 指定日期范围
+khal list -a Work today          # 指定日历
 ```
 
-## Search
+## 搜索
 
 ```bash
-khal search "meeting"
-khal search "dentist" --format "{start-date} {title}"
+khal search "会议"
+khal search "牙医" --format "{start-date} {title}"
 ```
 
-## Create Events
+## 创建日程
 
 ```bash
-khal new 2026-01-15 10:00 11:00 "Meeting title"
-khal new 2026-01-15 "All day event"
-khal new tomorrow 14:00 15:30 "Call" -a Work
-khal new 2026-01-15 10:00 11:00 "With notes" :: Description goes here
+khal new 2026-01-15 10:00 11:00 "会议标题"
+khal new 2026-01-15 "全天事项"
+khal new tomorrow 14:00 15:30 "通话" -a Work
+khal new 2026-01-15 10:00 11:00 "带备注的事项" :: 备注内容写在这里
 ```
 
-After creating, sync to push changes:
-```bash
-vdirsyncer sync
-```
-
-## Edit Events (interactive)
-
-`khal edit` is interactive — requires a TTY. Use tmux if automating:
-
-```bash
-khal edit "search term"
-khal edit -a CalendarName "search term"
-khal edit --show-past "old event"
-```
-
-Menu options:
-- `s` → edit summary
-- `d` → edit description
-- `t` → edit datetime range
-- `l` → edit location
-- `D` → delete event
-- `n` → skip (save changes, next match)
-- `q` → quit
-
-After editing, sync:
+创建后同步以推送变更：
 ```bash
 vdirsyncer sync
 ```
 
-## Delete Events
+## 编辑日程（交互式）
 
-Use `khal edit`, then press `D` to delete.
+`khal edit` 为交互式操作，需要 TTY。自动化场景请使用 tmux：
 
-## Output Formats
+```bash
+khal edit "搜索词"
+khal edit -a 日历名称 "搜索词"
+khal edit --show-past "历史事项"
+```
 
-For scripting:
+菜单选项：
+- `s` → 编辑标题
+- `d` → 编辑描述
+- `t` → 编辑时间范围
+- `l` → 编辑地点
+- `D` → 删除事项
+- `n` → 跳过（保存并匹配下一条）
+- `q` → 退出
+
+编辑后同步：
+```bash
+vdirsyncer sync
+```
+
+## 删除日程
+
+使用 `khal edit`，然后按 `D` 删除。
+
+## 输出格式
+
+用于脚本处理：
 ```bash
 khal list --format "{start-date} {start-time}-{end-time} {title}" today 7d
 khal list --format "{uid} | {title} | {calendar}" today
 ```
 
-Placeholders: `{title}`, `{description}`, `{start}`, `{end}`, `{start-date}`, `{start-time}`, `{end-date}`, `{end-time}`, `{location}`, `{calendar}`, `{uid}`
+可用占位符：`{title}`、`{description}`、`{start}`、`{end}`、`{start-date}`、`{start-time}`、`{end-date}`、`{end-time}`、`{location}`、`{calendar}`、`{uid}`
 
-## Caching
+## 缓存
 
-khal caches events in `~/.local/share/khal/khal.db`. If data looks stale after syncing:
+khal 将事件缓存于 `~/.local/share/khal/khal.db`。若同步后数据仍显示过期：
 ```bash
 rm ~/.local/share/khal/khal.db
 ```
 
-## Initial Setup
+## 初始配置
 
-### 1. Configure vdirsyncer (`~/.config/vdirsyncer/config`)
+### 1. 配置 vdirsyncer（`~/.config/vdirsyncer/config`）
 
-Example for iCloud:
+以 iCloud 为例：
 ```ini
 [general]
 status_path = "~/.local/share/vdirsyncer/status/"
@@ -118,13 +118,13 @@ path = "~/.local/share/vdirsyncer/calendars/"
 fileext = ".ics"
 ```
 
-Provider URLs:
-- iCloud: `https://caldav.icloud.com/`
-- Google: Use `google_calendar` storage type
-- Fastmail: `https://caldav.fastmail.com/dav/calendars/user/EMAIL/`
-- Nextcloud: `https://YOUR.CLOUD/remote.php/dav/calendars/USERNAME/`
+各服务商地址：
+- iCloud：`https://caldav.icloud.com/`
+- Google：使用 `google_calendar` 存储类型
+- Fastmail：`https://caldav.fastmail.com/dav/calendars/user/EMAIL/`
+- Nextcloud：`https://YOUR.CLOUD/remote.php/dav/calendars/USERNAME/`
 
-### 2. Configure khal (`~/.config/khal/config`)
+### 2. 配置 khal（`~/.config/khal/config`）
 
 ```ini
 [calendars]
@@ -141,9 +141,9 @@ timeformat = %H:%M
 dateformat = %Y-%m-%d
 ```
 
-### 3. Discover and sync
+### 3. 发现并同步
 
 ```bash
-vdirsyncer discover   # First time only
+vdirsyncer discover   # 仅首次执行
 vdirsyncer sync
 ```
