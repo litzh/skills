@@ -37,13 +37,6 @@ SKILLS = [
         "data_dirs": [Path.home() / ".cache/tieba"],
     },
     {
-        "dir": "feishu-api",
-        "script": "feishu.py",
-        "cmd": "feishu",
-        "env": {},
-        "data_dirs": [],
-    },
-    {
         "dir": "astock",
         "script": "main.py",
         "cmd": "astock",

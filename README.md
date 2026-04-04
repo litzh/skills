@@ -11,7 +11,7 @@
 uv run python install.py
 
 # 只安装指定 skill
-uv run python install.py zigbee feishu
+uv run python install.py zigbee
 ```
 
 安装内容：
@@ -29,12 +29,6 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 各工具运行时自动加载 `~/.config/skills.env`，在此文件中配置所需凭证：
 
 ```sh
-# feishu
-FEISHU_APP_ID=cli_xxx
-FEISHU_APP_SECRET=xxx
-FEISHU_ROBOT_ID=xxx
-FEISHU_ROBOT_SECRET=xxx
-
 # zigbee
 ZIGBEE_BROKER=192.168.1.x
 ZIGBEE_DEVICE=my-light
@@ -110,22 +104,6 @@ tieba clear                   # 清除缓存
 ```
 
 缓存目录：`~/.cache/tieba/`
-
----
-
-### `feishu` — 飞书 API
-
-**必须配置：** 见下方各子命令。
-
-```bash
-# 查询用户 open_id（需要 FEISHU_APP_ID、FEISHU_APP_SECRET）
-feishu batch-get-id --emails user@example.com
-feishu batch-get-id --mobiles 13800138000
-
-# 发送消息（需要 FEISHU_ROBOT_ID、FEISHU_ROBOT_SECRET）
-feishu robot-send "消息内容"
-feishu robot-send "消息内容" --at ou_xxx ou_yyy
-```
 
 ---
 
